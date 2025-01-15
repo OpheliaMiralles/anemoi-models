@@ -105,6 +105,8 @@ class InputNormalizer(BasePreprocessor):
         self.register_buffer("_norm_add", torch.from_numpy(_norm_add), persistent=True)
         self.register_buffer("_input_idx", data_indices.data.input.full, persistent=True)
         self.register_buffer("_output_idx", self.data_indices.data.output.full, persistent=True)
+        self.register_buffer("_model_output_idx", self.data_indices.model.output.full, persistent=True)
+
 
     def _validate_normalization_inputs(self, name_to_index_training_input: dict, minimum, maximum, mean, stdev):
         assert len(self.methods) == sum(len(v) for v in self.method_config.values()), (
@@ -200,6 +202,8 @@ class InputNormalizer(BasePreprocessor):
             x[..., :] = (x[..., :] - self._norm_add[data_index]) / self._norm_mul[data_index]
         elif x.shape[-1] == len(self._output_idx):
             x[..., :] = (x[..., :] - self._norm_add[self._output_idx]) / self._norm_mul[self._output_idx]
+        elif x.shape[-1] == len(self._model_output_idx):
+            x[..., :] = (x[..., :] - self._norm_add[self._model_output_idx]) / self._norm_mul[self._model_output_idx]
         else:
             x[..., :] = (x[..., :] - self._norm_add) / self._norm_mul
         return x
