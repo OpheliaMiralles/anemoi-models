@@ -13,6 +13,7 @@ from typing import Optional
 
 import einops
 import torch
+from omegaconf import OmegaConf
 from anemoi.utils.config import DotDict
 from hydra.utils import instantiate
 from torch import Tensor
@@ -59,11 +60,26 @@ class AnemoiModelEncProcDec(nn.Module):
         self.data_indices = data_indices
 
         self.multi_step = model_config.training.multistep_input
+        self.known_future_variables = (
+            []
+            if model_config.training.known_future_variables is None
+            else OmegaConf.to_container(model_config.training.known_future_variables, resolve=True)
+        )
+        self.additional_model_variables = []
+        if model_config.training.get("additional_model_variables", None) is not None:
+            self.additional_model_variables = OmegaConf.to_container(
+                model_config.training.additional_model_variables, resolve=True
+            )
         self.num_channels = model_config.model.num_channels
 
         self.node_attributes = NamedNodesAttributes(model_config.model.trainable_parameters.hidden, self._graph_data)
 
-        input_dim = self.multi_step * self.num_input_channels + self.node_attributes.attr_ndims[self._graph_name_data]
+        input_dim = (
+            self.multi_step * self.num_input_channels
+            + 2 * len(self.known_future_variables) # 1 for interp time 1 for upper bound
+            + len(self.additional_model_variables)
+            + self.node_attributes.attr_ndims[self._graph_name_data]
+        )
 
         # Encoder data -> hidden
         self.encoder = instantiate(
@@ -112,9 +128,8 @@ class AnemoiModelEncProcDec(nn.Module):
         self._internal_output_idx = data_indices.internal_model.output.prognostic
 
     def _assert_matching_indices(self, data_indices: dict) -> None:
-        hypothetical_input_idx = (
-            len(data_indices.internal_model.output.full)
-            - len(data_indices.internal_model.output.diagnostic)
+        hypothetical_input_idx = len(data_indices.internal_model.output.full) - len(
+            data_indices.internal_model.output.diagnostic
         )
         assert len(self._internal_output_idx) == hypothetical_input_idx, (
             f"Mismatch between the internal data indices ({len(self._internal_output_idx)}) and "

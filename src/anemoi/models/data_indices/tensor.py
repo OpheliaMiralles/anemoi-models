@@ -54,10 +54,7 @@ class BaseTensorIndex:
         self.full = self._build_idx_from_list(includes)
 
     def _build_idx_from_list(self, var_list):
-        sorted_variables = torch.Tensor(sorted(i for name, i in self.name_to_index.items() if name in var_list)).to(
-            torch.int
-        )
-        return sorted_variables
+        return torch.Tensor(sorted(i for name, i in self.name_to_index.items() if name in var_list)).to(torch.int)
 
     def __len__(self) -> int:
         return len(self.full)
@@ -106,7 +103,6 @@ class InputTensorIndex(BaseTensorIndex):
         targets: list[str],
         includes: list[str],
         name_to_index: dict[str, int],
-        **kwargs,
     ) -> None:
         super().__init__(
             prognostic=prognostic,
@@ -116,18 +112,9 @@ class InputTensorIndex(BaseTensorIndex):
             includes=includes,
             name_to_index=name_to_index,
         )
-        self._known_future_variables = kwargs.pop(
-            "known_future_variables", []
-        )  # only used to compute the length of the tensor
-        self._additional_model_variables = kwargs.pop("additional_model_variables", [])
 
     def __len__(self) -> int:
-        return (
-            len(self.prognostic)
-            + len(self.forcing)
-            + 2 * len(self._known_future_variables)
-            + len(self._additional_model_variables)
-        )
+        return len(self.full)
 
 
 class OutputTensorIndex(BaseTensorIndex):

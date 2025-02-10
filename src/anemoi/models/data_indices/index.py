@@ -84,15 +84,11 @@ class ModelIndex(BaseIndex):
         targets,
         name_to_index_model_input,
         name_to_index_model_output,
-        known_future_variables,
-        additional_model_variables,
     ) -> None:
         self._diagnostic = diagnostic
         self._forcing = forcing
         self._targets = targets
         self._prognostic = [v for v in name_to_index_model_input.keys() if v not in set(forcing + diagnostic + targets)]
-        self._known_future_variables = known_future_variables
-        self._additional_model_variables = additional_model_variables
         self._name_to_index_model_input = name_to_index_model_input
         self._name_to_index_model_output = name_to_index_model_output
         self.input = InputTensorIndex(
@@ -102,12 +98,10 @@ class ModelIndex(BaseIndex):
             diagnostic=diagnostic,
             prognostic=self._prognostic,
             name_to_index=name_to_index_model_input,
-            additional_model_variables=additional_model_variables,
-            known_future_variables=known_future_variables,
         )
 
         self.output = OutputTensorIndex(
-            includes=diagnostic + self._prognostic,
+            includes=self._prognostic + diagnostic,
             forcing=forcing,
             targets=targets,
             diagnostic=diagnostic,

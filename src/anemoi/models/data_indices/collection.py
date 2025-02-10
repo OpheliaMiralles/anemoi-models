@@ -32,16 +32,6 @@ class IndexCollection:
             [] if config.data.diagnostic is None else OmegaConf.to_container(config.data.diagnostic, resolve=True)
         )
         self.targets = [] if config.data.targets is None else OmegaConf.to_container(config.data.targets, resolve=True)
-        self.known_future_variables = (
-            []
-            if config.training.known_future_variables is None
-            else OmegaConf.to_container(config.training.known_future_variables, resolve=True)
-        )
-        self.additional_model_variables = []
-        if config.training.get("additional_model_variables", None) is not None:
-            self.additional_model_variables = OmegaConf.to_container(
-                config.training.additional_model_variables, resolve=True
-            )
         defined_variables = set.union(set(self.forcing), set(self.diagnostic), set(self.targets))
         self.prognostic = [v for v in self.name_to_index.keys() if v not in defined_variables]
         # config.data.remapped is an optional dictionary with every remapper as one entry
@@ -74,9 +64,7 @@ class IndexCollection:
         name_to_index_model_output = {
             name: i
             for i, name in enumerate(
-                key
-                for key in self.name_to_index
-                if key in self.prognostic or key in self.diagnostic
+                key for key in self.name_to_index if key in self.prognostic or key in self.diagnostic
             )
         }
         # remove remapped variables from internal data and model indices
@@ -119,8 +107,6 @@ class IndexCollection:
             self.targets,
             name_to_index_model_input,
             name_to_index_model_output,
-            self.known_future_variables,
-            self.additional_model_variables,
         )
         self.internal_model = ModelIndex(
             self.diagnostic,
@@ -128,8 +114,6 @@ class IndexCollection:
             self.targets,
             name_to_index_internal_model_input,
             name_to_index_internal_model_output,
-            self.known_future_variables,
-            self.additional_model_variables,
         )  # internal after the remapping applied to model (inference)
 
     def __repr__(self) -> str:
