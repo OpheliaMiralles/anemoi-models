@@ -107,7 +107,6 @@ class InputNormalizer(BasePreprocessor):
         self.register_buffer("_output_idx", self.data_indices.data.output.full, persistent=True)
         self.register_buffer("_model_output_idx", self.data_indices.model.output.full, persistent=True)
 
-
     def _validate_normalization_inputs(self, name_to_index_training_input: dict, minimum, maximum, mean, stdev):
         assert len(self.methods) == sum(len(v) for v in self.method_config.values()), (
             f"Error parsing methods in InputNormalizer methods ({len(self.methods)}) "

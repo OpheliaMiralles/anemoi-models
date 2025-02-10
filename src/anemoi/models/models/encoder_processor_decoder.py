@@ -13,9 +13,9 @@ from typing import Optional
 
 import einops
 import torch
-from omegaconf import OmegaConf
 from anemoi.utils.config import DotDict
 from hydra.utils import instantiate
+from omegaconf import OmegaConf
 from torch import Tensor
 from torch import nn
 from torch.distributed.distributed_c10d import ProcessGroup
@@ -76,7 +76,7 @@ class AnemoiModelEncProcDec(nn.Module):
 
         input_dim = (
             self.multi_step * self.num_input_channels
-            + 2 * len(self.known_future_variables) # 1 for interp time 1 for upper bound
+            + 2 * len(self.known_future_variables)  # 1 for interp time 1 for upper bound
             + len(self.additional_model_variables)
             + self.node_attributes.attr_ndims[self._graph_name_data]
         )
