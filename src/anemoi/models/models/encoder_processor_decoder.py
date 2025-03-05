@@ -62,14 +62,14 @@ class AnemoiModelEncProcDec(nn.Module):
         self.multi_step = model_config.training.multistep_input
         self.known_future_variables = (
             []
-            if model_config.training.known_future_variables is None
+            if model_config.training.get("known_future_variables", None) is None
             else OmegaConf.to_container(model_config.training.known_future_variables, resolve=True)
         )
-        self.additional_model_variables = []
-        if model_config.training.get("additional_model_variables", None) is not None:
-            self.additional_model_variables = OmegaConf.to_container(
-                model_config.training.additional_model_variables, resolve=True
-            )
+        self.additional_model_variables = (
+            []
+            if model_config.training.get("additional_model_variables", None) is None
+            else OmegaConf.to_container(model_config.training.additional_model_variables, resolve=True)
+        )
         self.num_channels = model_config.model.num_channels
 
         self.node_attributes = NamedNodesAttributes(model_config.model.trainable_parameters.hidden, self._graph_data)
